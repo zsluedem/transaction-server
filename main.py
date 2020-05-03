@@ -8,6 +8,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 from contextlib import contextmanager
+from weakref import WeakValueDictionary
 
 import lmdb
 from aiohttp import web
@@ -31,7 +32,8 @@ root = logging.getLogger()
 root.addHandler(handler)
 root.setLevel(logging.INFO)
 
-LockControll = defaultdict(Lock)
+# LockControll = defaultdict(Lock)
+LockControll = WeakValueDictionary()
 
 executor = ThreadPoolExecutor(NUM_CORE)
 
@@ -105,7 +107,10 @@ async def get_transactions(block_hash: str):
 async def handle(request: Request):
     block_hash: str = request.match_info['blockHash']
     logging.info("Receive request on blockhash {} from {}".format(block_hash, request.remote))
-    lock = LockControll[block_hash]
+    lock = LockControll.get(block_hash)
+    if lock is None:
+        lock = Lock()
+        LockControll[block_hash] = lock
     block_hash_b: bytes = block_hash.encode('utf8')
     async with lock:
         with lmdb_env.begin() as txn:
