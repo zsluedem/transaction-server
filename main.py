@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import multiprocessing
@@ -6,6 +7,7 @@ from asyncio import Lock, get_event_loop
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
+from contextlib import contextmanager
 
 import lmdb
 from aiohttp import web
@@ -13,7 +15,6 @@ from aiohttp.web import Request
 from rchain.client import RClient
 from rchain.param import mainnet_param
 from rchain.report import DeployWithTransaction
-import base64
 
 DB_PATH = os.environ.get("DB_PATH", "transactionsDB")
 TARGET_RNODE_HOST = os.environ.get("TARGET_RNODE_HOST")
@@ -22,6 +23,7 @@ HOST = os.environ.get('HOST', '127.0.0.1')
 PORT = int(os.environ.get('PORT', 7070))
 NUM_CORE = os.environ.get("NUM_CORE", multiprocessing.cpu_count() * 2)
 LOG_PATH = os.environ.get("LOG_PATH", "/var/log/transactions.log")
+MAX_MEM = int(os.environ.get("MAX_MEM", 10)) * 1048576  # Megabytes
 
 handler = logging.FileHandler(LOG_PATH)
 handler.setLevel(logging.INFO)
@@ -29,11 +31,28 @@ root = logging.getLogger()
 root.addHandler(handler)
 root.setLevel(logging.INFO)
 
-lmdb_env = lmdb.open(DB_PATH)
-
 LockControll = defaultdict(Lock)
 
 executor = ThreadPoolExecutor(NUM_CORE)
+
+# unused because of uncertainty
+class LMDBWrapper:
+    def __init__(self, path, map_size):
+        self.path = path
+        self.map_size = map_size
+        self._db = lmdb.open(path, map_size=map_size)
+
+    @contextmanager
+    def begin(self, write=False):
+        try:
+            with self._db.begin(write=write) as txn:
+                yield txn
+        except (lmdb.MapResizedError, lmdb.MemoryError):
+            self._db.close()
+            self._db = lmdb.open(path=self.path, map_size=self.map_size)
+
+
+lmdb_env = lmdb.open(DB_PATH, map_size=MAX_MEM)
 
 
 def to_dict(deploy_transactions: List[DeployWithTransaction]):
@@ -102,8 +121,10 @@ async def handle(request: Request):
             logging.info("The data {} , {} is already in db".format(block_hash, result))
     return web.Response(body=result, headers={"Content-Type": "application/json"})
 
+
 async def handle_status(request: Request):
     return web.Response(body="OK")
+
 
 app = web.Application()
 app.router.add_get('/getTransaction/{blockHash}', handle)
