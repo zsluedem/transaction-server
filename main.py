@@ -102,8 +102,11 @@ async def handle(request: Request):
             logging.info("The data {} , {} is already in db".format(block_hash, result))
     return web.Response(body=result, headers={"Content-Type": "application/json"})
 
+async def handle_status(request: Request):
+    return web.Response(body="OK")
 
 app = web.Application()
 app.router.add_get('/getTransaction/{blockHash}', handle)
+app.router.add_get('/status', handle_status)
 
 web.run_app(app, host=HOST, port=PORT)
