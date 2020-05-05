@@ -26,7 +26,10 @@ NUM_CORE = os.environ.get("NUM_CORE", multiprocessing.cpu_count() * 2)
 LOG_PATH = os.environ.get("LOG_PATH", "/var/log/transactions.log")
 MAX_MEM = int(os.environ.get("MAX_MEM", 10)) * 1048576  # Megabytes
 
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(LOG_PATH)
+handler.setFormatter(formatter)
 handler.setLevel(logging.INFO)
 root = logging.getLogger()
 root.addHandler(handler)
@@ -118,12 +121,12 @@ async def handle(request: Request):
         if result is None:
             logging.info("There no result in database for {}, fetch data from server".format(block_hash))
             result = await get_transactions(block_hash)
-            logging.info("Done fetch {} result {} from server".format(block_hash, result))
+            logging.info("Done fetch {} result {} from server".format(block_hash, result[:20]))
             with lmdb_env.begin(write=True) as w_txn:
                 w_txn.put(block_hash_b, result)
             logging.info("put data {} into db".format(block_hash))
         else:
-            logging.info("The data {} , {} is already in db".format(block_hash, result))
+            logging.info("The data {} , {} is already in db".format(block_hash, result[:20]))
     return web.Response(body=result, headers={"Content-Type": "application/json"})
 
 
