@@ -2,5 +2,4 @@ venv
 .idea
 transactionsDB
 *.log
-local/run
 local
