@@ -3,3 +3,4 @@ venv
 transactionsDB
 *.log
 local
+__pycache__
