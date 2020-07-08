@@ -5,17 +5,17 @@ import json
 import logging
 from threading import RLock
 import cachetools
+from config import TARGET_RNODE_HOST, TARGET_RNODE_HTTP_PORT, USE_HTTPS
 
-MAINNET_OBSERVER = "https://observer.services.mainnet.rchain.coop"
 # the total supply of the rchain mainnet is fixed
 TOTAL_SUPPLY = 870663574.00
 REV_TO_PHLO = 100000000
-CIRCULATION_CACHE_TIMEOUT = '1 day'
-BALANCE_CACHE_TIMEOUT = '5 minutes'
 
 circulation_TTCache = cachetools.TTLCache(10e5, 60 * 60 * 24)
 balance_TTCache = cachetools.TTLCache(10e5, 60*60 *24)
 
+http = "https://" if USE_HTTPS else 'http://'
+target_host = "{}{}:{}".format(http, TARGET_RNODE_HOST, TARGET_RNODE_HTTP_PORT)
 # coop addresses
 coopSaleAddr = "11112GNiZeEQkMcSHRFgWbYvRuiKAN4Y44Jd1Ld6taFsGrw5JNHLtX"
 coopTreasuryAddr = "111126JvMwXfDi6sBQNVwvSSNCMpXapTFTD1poQVzh7mzhN3WWn4kF"
@@ -101,7 +101,7 @@ async def get_balance(address: str):
         return ret
     else:
         async with aiohttp.ClientSession() as session:
-            async  with session.post(MAINNET_OBSERVER+'/api/explore-deploy', data=query) as resp:
+            async  with session.post(target_host + '/api/explore-deploy', data=query) as resp:
                 if resp.status != 200:
                     return -1
                 else:
@@ -124,7 +124,7 @@ async def get_total_circulation():
         return ret
     else:
         async with aiohttp.ClientSession() as session:
-            async with session.post(MAINNET_OBSERVER +'/api/explore-deploy', data=totalCirculationQuery) as resp:
+            async with session.post(target_host + '/api/explore-deploy', data=totalCirculationQuery) as resp:
                 if resp.status != 200:
                     return -1
                 else:

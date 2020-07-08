@@ -3,6 +3,8 @@ import multiprocessing
 DB_PATH = os.environ.get("DB_PATH", "transactionsDB")
 TARGET_RNODE_HOST = os.environ.get("TARGET_RNODE_HOST")
 TARGET_RNODE_PORT = os.environ.get('TARGET_RNODE_PORT', 40401)
+TARGET_RNODE_HTTP_PORT = os.environ.get("TARGET_RNODE_HTTP_PORT", 40403)
+USE_HTTPS = os.environ.get("USE_HTTPS", 0)
 HOST = os.environ.get('HOST', '127.0.0.1')
 PORT = int(os.environ.get('PORT', 7070))
 NUM_CORE = os.environ.get("NUM_CORE", multiprocessing.cpu_count() * 2)
