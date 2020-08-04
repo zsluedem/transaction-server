@@ -93,7 +93,6 @@ new return, rl(`rho:registry:lookup`), RevVaultCh, vaultCh, balanceCh in {
 }"""
     return query.replace("$addr", address)
 
-@cachetools.cached(balance_TTCache, lock=RLock())
 async def get_balance(address: str):
     query =  balanceQuery(address)
     ret = balance_TTCache.get(address)
