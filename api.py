@@ -5,14 +5,14 @@ import json
 import logging
 from threading import RLock
 import cachetools
-from config import TARGET_RNODE_HOST, TARGET_RNODE_HTTP_PORT, USE_HTTPS
+from config import TARGET_RNODE_HOST, TARGET_RNODE_HTTP_PORT, USE_HTTPS, CACHE_TTL
 
 # the total supply of the rchain mainnet is fixed
 TOTAL_SUPPLY = 870663574.00
 REV_TO_PHLO = 100000000
 
-circulation_TTCache = cachetools.TTLCache(10e5, 60 * 60 * 24)
-balance_TTCache = cachetools.TTLCache(10e5, 60*60 *24)
+circulation_TTCache = cachetools.TTLCache(10e5, CACHE_TTL)
+balance_TTCache = cachetools.TTLCache(10e5, CACHE_TTL)
 
 http = "https://" if USE_HTTPS else 'http://'
 target_host = "{}{}:{}".format(http, TARGET_RNODE_HOST, TARGET_RNODE_HTTP_PORT)
