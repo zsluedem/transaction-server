@@ -111,3 +111,20 @@ async def transaction(request: Request):
         else:
             logging.info("The data {} , {} is already in db".format(block_hash, result[:20]))
     return web.Response(body=result, headers={"Content-Type": "application/json"})
+
+async def transfer(request: Request):
+    address = request.match_info['address']
+    result = []
+    with lmdb_env.begin() as txn:
+        cursor = txn.cursor()
+        # block_transaction (hash, data)
+        for block_transaction in iter(cursor):
+            if block_transaction[1] != b'[]':
+                content = json.loads(block_transaction[1])
+                for deploy in content:
+                    for transfer in deploy:
+                        if transfer['toAddr'] == address:
+                            result.append(transfer)
+                        elif transfer['fromAddr'] == address:
+                            result.append(transfer)
+    return web.Response(body=json.dumps(result), headers={"Content-Type": "application/json"})

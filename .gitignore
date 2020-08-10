@@ -1,6 +1,7 @@
 venv
 .idea
 transactionsDB
+transactionDB
 *.log
 local
 __pycache__
