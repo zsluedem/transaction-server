@@ -16,12 +16,12 @@ from aiohttp.web import Request
 from rchain.client import RClient
 from rchain.param import mainnet_param
 from rchain.report import DeployWithTransaction
-from config import DB_PATH, TARGET_RNODE_HOST, TARGET_RNODE_PORT, HOST, PORT, NUM_CORE,  LOG_PATH, MAX_MEM
+from config import setting
 
 # LockControll = defaultdict(Lock)
 LockControll = WeakValueDictionary()
 
-executor = ThreadPoolExecutor(NUM_CORE)
+executor = ThreadPoolExecutor(setting.NUM_CORE)
 
 # unused because of uncertainty
 class LMDBWrapper:
@@ -40,7 +40,7 @@ class LMDBWrapper:
             self._db = lmdb.open(path=self.path, map_size=self.map_size)
 
 
-lmdb_env = lmdb.open(DB_PATH, map_size=MAX_MEM)
+lmdb_env = lmdb.open(setting.DB_PATH, map_size=setting.MAX_MEM)
 
 
 def to_dict(deploy_transactions: List[DeployWithTransaction]):
@@ -74,13 +74,13 @@ def to_dict(deploy_transactions: List[DeployWithTransaction]):
 
 
 def fetch_transactions(block_hash: str):
-    client = RClient(TARGET_RNODE_HOST, TARGET_RNODE_PORT,
+    client = RClient(setting.TARGET_RNODE_HOST, setting.TARGET_RNODE_PORT,
                      (('grpc.keepalive_time_ms', 10000), ('grpc.max_receive_message_length', 1619430400),),
                      True)
     client.install_param(mainnet_param)
-    logging.info("request {} getTransaction from server {}".format(block_hash, TARGET_RNODE_HOST))
+    logging.info("request {} getTransaction from server {}".format(block_hash, setting.TARGET_RNODE_HOST))
     transactions = client.get_transaction(block_hash)
-    logging.info("receive {} getTransaction {} from server {}".format(block_hash, transactions, TARGET_RNODE_HOST))
+    logging.info("receive {} getTransaction {} from server {}".format(block_hash, transactions, setting.TARGET_RNODE_HOST))
     client.close()
     return json.dumps(to_dict(transactions)).encode('utf8')
 

@@ -1,0 +1,22 @@
+DB_PATH:
+  /path/to/database
+TARGET_RNODE_HOST:
+  rnode.host
+TARGET_RNODE_PORT:
+  40401
+TARGET_RNODE_HTTP_PORT:
+  40403
+USE_HTTPS:
+  false
+HOST:
+  0.0.0.0
+PORT:
+  7070
+NUM_CORE:
+  4
+LOG_PATH:
+  /path/to/log.log
+MAX_MEM:
+  500048576
+CACHE_TTL:
+  60

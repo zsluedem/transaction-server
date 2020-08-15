@@ -5,17 +5,17 @@ import json
 import logging
 from threading import RLock
 import cachetools
-from config import TARGET_RNODE_HOST, TARGET_RNODE_HTTP_PORT, USE_HTTPS, CACHE_TTL
+from config import setting
 
 # the total supply of the rchain mainnet is fixed
 TOTAL_SUPPLY = 870663574.00
 REV_TO_PHLO = 100000000
 
-circulation_TTCache = cachetools.TTLCache(10e5, CACHE_TTL)
-balance_TTCache = cachetools.TTLCache(10e5, CACHE_TTL)
+circulation_TTCache = cachetools.TTLCache(10e5, setting.CACHE_TTL)
+balance_TTCache = cachetools.TTLCache(10e5, setting.CACHE_TTL)
 
-http = "https://" if USE_HTTPS else 'http://'
-target_host = "{}{}:{}".format(http, TARGET_RNODE_HOST, TARGET_RNODE_HTTP_PORT)
+http = "https://" if setting.USE_HTTPS else 'http://'
+target_host = "{}{}:{}".format(http, setting.TARGET_RNODE_HOST, setting.TARGET_RNODE_HTTP_PORT)
 # coop addresses
 coopSaleAddr = "11112GNiZeEQkMcSHRFgWbYvRuiKAN4Y44Jd1Ld6taFsGrw5JNHLtX"
 coopTreasuryAddr = "111126JvMwXfDi6sBQNVwvSSNCMpXapTFTD1poQVzh7mzhN3WWn4kF"
