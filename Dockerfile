@@ -5,4 +5,4 @@ WORKDIR /transaction_server
 VOLUME /transaction_server/transactionsDB
 RUN pip install -r requirements.txt
 RUN ln -sf /dev/stdout /var/log/transactions.log
-CMD  ["python", "main.py"]
+CMD  ["python", "main.py", "-c", "config.yml"]

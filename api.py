@@ -130,7 +130,7 @@ async def get_total_circulation():
                     try:
                         content = await resp.text()
                         result =  json.loads(content)
-                        circulation =result['expr'][0]['ExprInt']['data'] / REV_TO_PHLO
+                        circulation = result['expr'][0]['ExprInt']['data'] / REV_TO_PHLO
                         circulation_TTCache[KEY_CIRCULATION] = circulation
                         return circulation
                     except Exception as e:
