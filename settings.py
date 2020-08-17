@@ -24,8 +24,10 @@ class Settings():
     LOG_PATH: str
     MAX_MEM: int
     CACHE_TTL: int
+    VALIDATORS_TTL: int
     validator_list: Optional[List[ValidatorInfo]]
     original_setting_dict: Dict
+    VALIDATOR_REQUEST_TIMEOUT: int
 
     @classmethod
     def parse_from_yaml(cls, settings):
@@ -44,4 +46,6 @@ class Settings():
                    LOG_PATH=settings['LOG_PATH'],
                    MAX_MEM=settings['MAX_MEM'],
                    CACHE_TTL=settings['CACHE_TTL'],
-                   validator_list=validator_list, original_setting_dict=settings)
+                   validator_list=validator_list, original_setting_dict=settings,
+                   VALIDATOR_REQUEST_TIMEOUT=settings['VALIDATOR_REQUEST_TIMEOUT'],
+                   VALIDATORS_TTL=settings['VALIDATORS_TTL'])

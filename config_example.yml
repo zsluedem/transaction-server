@@ -4,6 +4,10 @@ VALIDATOR_LIST:
       grpc_port: 40401
       http_port: 40403
       pub_key: key1
+VALIDATOR_REQUEST_TIMEOUT:
+  2
+VALIDATORS_TTL:
+  10
 DB_PATH:
   /path/to/database
 TARGET_RNODE_HOST:
