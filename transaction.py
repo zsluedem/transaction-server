@@ -127,4 +127,5 @@ async def transfer(request: Request):
                             result.append(transfer)
                         elif transfer['fromAddr'] == address:
                             result.append(transfer)
+    result = sorted(result, key=lambda x:x['deploy']['timestamp'], reverse=True)
     return web.Response(body=json.dumps(result), headers={"Content-Type": "application/json"})
