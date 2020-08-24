@@ -14,18 +14,11 @@ Transaction database
     
 # Config
 
-All the config should be in the environment variable
+Use yaml file to config. 
 
-    DB_PATH=/path/to/db
-    TARGET_RNODE_HOST=rchain.coop
-    TARGET_RNODE_PORT=40401
-    HOST=127.0.0.1
-    PORT=7070
-    NUM_CORE=2
-    LOG_PATH=/path/to/log
-    MAX_MEM=10  # megabytes for lmdb
+[Config Example](https://github.com/zsluedem/transaction-server/blob/master/config_example.yml)
 
 # Docker
 
-    docker run -d zsluedem/transaction-server
+    docker run -v config.yml:/transaction_server/config.yml -d zsluedem/transaction-server
 
