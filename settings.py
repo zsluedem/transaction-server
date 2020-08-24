@@ -9,7 +9,7 @@ class ValidatorInfo():
     pub_key: str
 
     def to_dict(self):
-        return {'host': self.host, 'grpc_port':self.grpc_port, 'http_port':self.http_port, 'pub_key': self.pub_key}
+        return {'host': self.host, 'grpc_port':self.grpc_port, 'http_port':self.http_port}
 
 @dataclass()
 class Settings():
