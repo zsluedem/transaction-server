@@ -7,6 +7,7 @@ class ValidatorInfo():
     grpc_port: int
     http_port: int
     pub_key: str
+    isHTTPS: bool
 
     def to_dict(self):
         return {'host': self.host, 'grpc_port':self.grpc_port, 'http_port':self.http_port}
@@ -32,7 +33,7 @@ class Settings():
     @classmethod
     def parse_from_yaml(cls, settings):
         if settings.get('VALIDATOR_LIST'):
-            validator_list = [ValidatorInfo(v['host'], v['grpc_port'], v['http_port'], v['pub_key']) for v in settings['VALIDATOR_LIST']]
+            validator_list = [ValidatorInfo(v['host'], v['grpc_port'], v['http_port'], v['pub_key'], v['isHTTPS']) for v in settings['VALIDATOR_LIST']]
         else:
             validator_list = None
         return cls(DB_PATH=settings['DB_PATH'],

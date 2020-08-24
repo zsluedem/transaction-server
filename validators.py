@@ -30,8 +30,9 @@ class LatestInfo():
 
 
 async def get_latest_block(validator: ValidatorInfo):
+    http_scheme = 'https://' if validator.isHTTPS else 'http://'
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(setting.VALIDATOR_REQUEST_TIMEOUT)) as session:
-        async with session.get('http://'+ validator.host + ':' + str(validator.http_port) + '/api/blocks/1') as resp:
+        async with session.get(http_scheme+ validator.host + ':' + str(validator.http_port) + '/api/blocks/1') as resp:
             blocks = await resp.json()
             latest_block = blocks[0]
             return LatestInfo(latest_block['blockNumber'], latest_block['sender'], validator)
@@ -50,7 +51,7 @@ async def validator(request: Request):
                 latest_block_number_tasks = []
                 for validator in setting.validator_list:
                     latest_block_number_tasks.append(get_latest_block(validator))
-                latest_infos = await asyncio.gather(*latest_block_number_tasks, return_exceptions=True)
+                latest_infos = await asyncio.gather(*latest_block_number_tasks, return_exceptions=False)
                 latest_infos_no_exception= list(filter(lambda x: not isinstance(x, Exception), latest_infos))
                 if len(latest_infos_no_exception) ==0:
                     best = random.choice(setting.validator_list)
@@ -73,7 +74,7 @@ async def validator(request: Request):
                     # actually index validator should be the latest proposed validator
                     # but it is possible that at this moment, the next validator is already trying
                     # to propose a new block. So choosing the +2 validator is more reliable
-                    best = nth(ncycles(setting.validator_list,2),index+2)
+                    best = nth(ncycles(setting.validator_list, 2),index+2)
                     result = {
                         "bestValidator": {
                             "host": best.host,
