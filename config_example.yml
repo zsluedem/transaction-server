@@ -1,6 +1,5 @@
 VALIDATOR_LIST:
-  - node0:
-      host: node0.rchain.coop
+  -   host: node0.rchain.coop
       grpc_port: 40401
       http_port: 40403
       pub_key: key1

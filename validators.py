@@ -9,7 +9,7 @@ from settings import ValidatorInfo
 from config import setting
 import aiohttp
 import json
-from more_itertools import locate, first_true, one, ncycles, nth
+from more_itertools import locate, first_true, one, ncycles, nth, split_before, last, first
 from dataclasses import dataclass
 import cachetools
 import random
@@ -51,18 +51,19 @@ async def validator(request: Request):
                 latest_block_number_tasks = []
                 for validator in setting.validator_list:
                     latest_block_number_tasks.append(get_latest_block(validator))
-                latest_infos = await asyncio.gather(*latest_block_number_tasks, return_exceptions=False)
+                latest_infos = await asyncio.gather(*latest_block_number_tasks, return_exceptions=True)
                 latest_infos_no_exception= list(filter(lambda x: not isinstance(x, Exception), latest_infos))
+
+                # get latest blocks from all the validators failed then randomly return the `nextToPropose`
                 if len(latest_infos_no_exception) ==0:
                     best = random.choice(setting.validator_list)
                     result = {
-                        "bestValidator": {
+                        "nextToPropose": {
                             "host": best.host,
                             "grpcPort": best.grpc_port,
                             "httpPort": best.http_port,
                             "latestBlockNumber": 0
-                        }
-                        ,
+                        },
                         'validators': available_validators
                     }
                 else:
@@ -74,15 +75,20 @@ async def validator(request: Request):
                     # actually index validator should be the latest proposed validator
                     # but it is possible that at this moment, the next validator is already trying
                     # to propose a new block. So choosing the +2 validator is more reliable
-                    best = nth(ncycles(setting.validator_list, 2),index+2)
+                    best = nth(ncycles(setting.validator_list, 2), index + 2)
+                    split_validators = list(split_before(available_validators, lambda x: x['host'] == best.host))
+                    if len(split_validators) == 1:
+                        sorted_validators = one(split_validators)
+                    else:
+                        sorted_validators = last(split_validators) + first(split_validators)
                     result = {
-                        "bestValidator": {
+                        "nextToPropose": {
                             "host": best.host,
                             "grpcPort": best.grpc_port,
                             "httpPort": best.http_port,
                             "latestBlockNumber": max_block_numbers
                         },
-                        'validators': available_validators
+                        'validators': sorted_validators
                     }
                     validator_TTCache[VALIDATOR_CACHE_KEY] = result
     return web.Response(body=json.dumps(result), headers={"Content-Type": "application/json"})
