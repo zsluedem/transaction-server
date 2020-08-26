@@ -3,6 +3,7 @@ VALIDATOR_LIST:
       grpc_port: 40401
       http_port: 40403
       pub_key: key1
+      isHTTPS: false
 VALIDATOR_REQUEST_TIMEOUT:
   2
 VALIDATORS_TTL:
