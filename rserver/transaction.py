@@ -16,12 +16,15 @@ from aiohttp.web import Request
 from rchain.client import RClient
 from rchain.param import mainnet_param
 from rchain.report import DeployWithTransaction
-from config import setting
+from .config import setting
+from fastapi import APIRouter
+from fastapi.responses import Response
 
 # LockControll = defaultdict(Lock)
 LockControll = WeakValueDictionary()
 
 executor = ThreadPoolExecutor(setting.NUM_CORE)
+router = APIRouter()
 
 # unused because of uncertainty
 class LMDBWrapper:
@@ -89,31 +92,30 @@ async def get_transactions(block_hash: str):
     loop = get_event_loop()
     return await loop.run_in_executor(executor, fetch_transactions, block_hash)
 
-
-async def transaction(request: Request):
-    block_hash: str = request.match_info['blockHash']
-    logging.info("Receive request on blockhash {} from {}".format(block_hash, request.remote))
-    lock = LockControll.get(block_hash)
+@router.get('/getTransaction/{blockHash}')
+async def transaction(blockHash: str):
+    logging.info("Receive request on blockhash {}".format(blockHash))
+    lock = LockControll.get(blockHash)
     if lock is None:
         lock = Lock()
-        LockControll[block_hash] = lock
-    block_hash_b: bytes = block_hash.encode('utf8')
+        LockControll[blockHash] = lock
+    block_hash_b: bytes = blockHash.encode('utf8')
     async with lock:
         with lmdb_env.begin() as txn:
             result = txn.get(block_hash_b)
         if result is None:
-            logging.info("There no result in database for {}, fetch data from server".format(block_hash))
-            result = await get_transactions(block_hash)
-            logging.info("Done fetch {} result {} from server".format(block_hash, result[:20]))
+            logging.info("There no result in database for {}, fetch data from server".format(blockHash))
+            result = await get_transactions(blockHash)
+            logging.info("Done fetch {} result {} from server".format(blockHash, result[:20]))
             with lmdb_env.begin(write=True) as w_txn:
                 w_txn.put(block_hash_b, result)
-            logging.info("put data {} into db".format(block_hash))
+            logging.info("put data {} into db".format(blockHash))
         else:
-            logging.info("The data {} , {} is already in db".format(block_hash, result[:20]))
-    return web.Response(body=result, headers={"Content-Type": "application/json"})
+            logging.info("The data {} , {} is already in db".format(blockHash, result[:20]))
+    return Response(content=result, headers={"Content-Type": "application/json"})
 
-async def transfer(request: Request):
-    address = request.match_info['address']
+@router.get('/api/transfer/{address}')
+async def transfer(address: str):
     result = []
     with lmdb_env.begin() as txn:
         cursor = txn.cursor()
@@ -128,4 +130,4 @@ async def transfer(request: Request):
                         elif transfer['fromAddr'] == address:
                             result.append(transfer)
     result = sorted(result, key=lambda x:x['deploy']['timestamp'], reverse=True)
-    return web.Response(body=json.dumps(result), headers={"Content-Type": "application/json"})
+    return Response(content=json.dumps(result), headers={"Content-Type": "application/json"})

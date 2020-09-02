@@ -1,25 +1,6 @@
-import logging
-import sys
-from weakref import WeakValueDictionary
+import uvicorn
+from rserver.app import app
+from rserver.config import setting
 
-from aiohttp import web
-from config import setting
-from routes import setup_routes
-
-
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler = logging.FileHandler(setting.LOG_PATH)
-handler.setFormatter(formatter)
-handler.setLevel(logging.INFO)
-root = logging.getLogger()
-root.addHandler(handler)
-std_handler = logging.StreamHandler(sys.stdout)
-std_handler.setFormatter(formatter)
-std_handler.setLevel(logging.INFO)
-root.addHandler(std_handler)
-root.setLevel(logging.INFO)
-
-app = web.Application()
-app = setup_routes(app)
-
-web.run_app(app, host=setting.HOST, port=setting.PORT)
+if __name__ == '__main__':
+    uvicorn.run(app, host=setting.HOST, port=setting.PORT)

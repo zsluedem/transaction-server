@@ -1,7 +1,7 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import yaml
-from settings import Settings
+from .settings import Settings
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", help="config file path", action="store", dest="config", )

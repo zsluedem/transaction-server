@@ -5,7 +5,11 @@ import json
 import logging
 from threading import RLock
 import cachetools
-from config import setting
+from fastapi import APIRouter
+from fastapi.responses import Response
+from .config import setting
+
+router = APIRouter()
 
 # the total supply of the rchain mainnet is fixed
 TOTAL_SUPPLY = 870663574.00
@@ -137,20 +141,22 @@ async def get_total_circulation():
                         logging.error(e)
                         return -1
 
-async def total_supply(request: Request):
-    return web.Response(text=str(TOTAL_SUPPLY))
+@router.get('/api/total-supply')
+async def total_supply():
+    return Response(content=str(TOTAL_SUPPLY))
 
-async def total_circulation(request: Request):
+@router.get('/api/total-circulation')
+async def total_circulation():
     result = await get_total_circulation()
     if result == -1:
-        return web.Response(status=500)
+        return Response(status_code=500)
     else:
-        return web.Response(text=str(result))
+        return Response(content=str(result))
 
-async def balance(request: Request):
-    address = request.match_info['address']
+@router.get('/api/balance/{address}')
+async def balance(address: str):
     result = await get_balance(address)
     if result == -1:
-        return web.Response(status=500)
+        return Response(status_code=500)
     else:
-        return web.Response(text=str(result))
+        return Response(content=str(result))

@@ -1,5 +1,7 @@
-from typing import Optional, List, Dict
 from dataclasses import dataclass
+from typing import Optional, List, Dict
+
+from pydantic import BaseModel
 
 @dataclass()
 class ValidatorInfo():
@@ -10,7 +12,7 @@ class ValidatorInfo():
     isHTTPS: bool
 
     def to_dict(self):
-        return {'host': self.host, 'grpc_port':self.grpc_port, 'http_port':self.http_port}
+        return {'host': self.host, 'grpc_port': self.grpc_port, 'http_port': self.http_port}
 
 @dataclass()
 class Settings():
@@ -33,7 +35,9 @@ class Settings():
     @classmethod
     def parse_from_yaml(cls, settings):
         if settings.get('VALIDATOR_LIST'):
-            validator_list = [ValidatorInfo(v['host'], v['grpc_port'], v['http_port'], v['pub_key'], v['isHTTPS']) for v in settings['VALIDATOR_LIST']]
+            validator_list = [
+                ValidatorInfo(host=v['host'], grpc_port=v['grpc_port'], http_port=v['http_port'], pub_key=v['pub_key'],
+                              isHTTPS=v['isHTTPS']) for v in settings['VALIDATOR_LIST']]
         else:
             validator_list = None
         return cls(DB_PATH=settings['DB_PATH'],
