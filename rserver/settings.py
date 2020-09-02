@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List, Dict
 
-from pydantic import BaseModel
 
 @dataclass()
 class ValidatorInfo():
@@ -13,6 +12,7 @@ class ValidatorInfo():
 
     def to_dict(self):
         return {'host': self.host, 'grpc_port': self.grpc_port, 'http_port': self.http_port}
+
 
 @dataclass()
 class Settings():
@@ -31,6 +31,12 @@ class Settings():
     validator_list: Optional[List[ValidatorInfo]]
     original_setting_dict: Dict
     VALIDATOR_REQUEST_TIMEOUT: int
+
+    TARGET_TESTNET_HOST: str
+    TARGET_TESTNET_PORT: str
+    TESTNET_FAUCET_TTL: int
+    TESTNET_FAUCET_PRIVATE_KEY: str
+    TESTNET_FAUCET_AMOUNT: int
 
     @classmethod
     def parse_from_yaml(cls, settings):
@@ -53,4 +59,9 @@ class Settings():
                    CACHE_TTL=settings['CACHE_TTL'],
                    validator_list=validator_list, original_setting_dict=settings,
                    VALIDATOR_REQUEST_TIMEOUT=settings['VALIDATOR_REQUEST_TIMEOUT'],
-                   VALIDATORS_TTL=settings['VALIDATORS_TTL'])
+                   VALIDATORS_TTL=settings['VALIDATORS_TTL'],
+                   TARGET_TESTNET_HOST=settings['TARGET_TESTNET_HOST'],
+                   TARGET_TESTNET_PORT=settings['TARGET_TESTNET_PORT'],
+                   TESTNET_FAUCET_TTL=settings['TESTNET_FAUCET_TTL'],
+                   TESTNET_FAUCET_PRIVATE_KEY=settings['TESTNET_FAUCET_PRIVATE_KEY'],
+                   TESTNET_FAUCET_AMOUNT=settings['TESTNET_FAUCET_AMOUNT'])
