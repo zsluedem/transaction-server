@@ -12,6 +12,10 @@ Transaction database
     cd transaction-server
     pip install -r requirements.txt
     
+# Run
+
+    python main.py -c /path/to/your/config.yml
+    
 # Config
 
 Use yaml file to config. 
