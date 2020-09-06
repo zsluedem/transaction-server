@@ -5,7 +5,7 @@
 import asyncio
 import random
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 import aiohttp
 import cachetools
@@ -29,6 +29,7 @@ NO_LATEST_BLOCK = -1
 class LatestInfo():
     block_number: int
     sender: str
+    timestamp: int
     validator: ValidatorInfo
 
 
@@ -44,6 +45,7 @@ class Validator(BaseModel):
     grpc_port: int
     http_port: int
     latestBlockNumber: int
+    timestamp: int
 
 
 class ValidatorsResponse(BaseModel):
@@ -60,11 +62,11 @@ async def get_latest_block(validator: ValidatorInfo):
                 blocks = await resp.json()
                 latest_block = first(blocks)
                 return LatestInfo(block_number=latest_block['blockNumber'], sender=latest_block['sender'],
-                                  validator=validator)
+                                  validator=validator, timestamp=latest_block['timestamp'])
     except asyncio.TimeoutError as e:
         print("get latest block from {} failed with tiemout {} -> {}".format(validator.host,
                                                                              setting.VALIDATOR_REQUEST_TIMEOUT, e))
-        return LatestInfo(block_number=NO_LATEST_BLOCK, sender='', validator=validator)
+        return LatestInfo(block_number=NO_LATEST_BLOCK, sender='', validator=validator, timestamp=NO_LATEST_BLOCK)
 
 
 @router.get('/api/validators')
@@ -83,7 +85,7 @@ async def validator():
                     latest_block_number_tasks.append(get_latest_block(validator))
                 latest_infos = await asyncio.gather(*latest_block_number_tasks, return_exceptions=True)
                 latest_infos_no_exception = list(filter(lambda x: x.block_number != NO_LATEST_BLOCK, latest_infos))
-                latest_num_dict = {i.validator.host: i.block_number for i in latest_infos}
+                latest_num_dict: Dict[str, LatestInfo] = {i.validator.host: i for i in latest_infos}
                 # get latest blocks from all the validators failed then randomly return the `nextToPropose`
                 if len(latest_infos_no_exception) == 0:
                     best = random.choice(setting.validator_list)
@@ -105,7 +107,8 @@ async def validator():
                     sorted_validators = last(split_validators) + first(split_validators)
 
                 validators = list(map(lambda x: Validator(host=x.host, grpc_port=x.grpc_port, http_port=x.http_port,
-                                                          latestBlockNumber=latest_num_dict.get(x.host, -1)),
+                                                          latestBlockNumber=latest_num_dict.get(x.host).block_number,
+                                                          timestamp=latest_num_dict.get(x.host).timestamp),
                                       sorted_validators))
 
                 nextToPropose = NextToPropose(host=best.host, grpcPort=best.grpc_port, httpPort=best.http_port,
