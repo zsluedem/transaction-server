@@ -26,3 +26,7 @@ Use yaml file to config.
 
     docker run -v config.yml:/transaction_server/config.yml -d zsluedem/transaction-server
 
+# Server API
+
+  - total supply: http://localhost:7070/api/total-supply
+  - transfer history: http://localhost:7070/api/transfer/your-rev-address
