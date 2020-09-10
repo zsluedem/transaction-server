@@ -39,7 +39,7 @@ def faucet(address: str, request: Request):
             with RClient(setting.TARGET_TESTNET_HOST, setting.TARGET_TESTNET_PORT) as client:
                 vault = VaultAPI(client)
                 private = PrivateKey.from_hex(setting.TESTNET_FAUCET_PRIVATE_KEY)
-                deployId = vault.transfer(private.get_public_key().get_rev_address(), address,
+                deployId = vault.transfer_ensure(private.get_public_key().get_rev_address(), address,
                                           setting.TESTNET_FAUCET_AMOUNT, private)
                 request_faucet_TTCache[addr] = (address,  deployId, request.client.host)
                 return FaucetResponse(deployID=deployId,
