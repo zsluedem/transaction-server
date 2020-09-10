@@ -21,7 +21,9 @@ class FaucetResponse(BaseModel):
 def faucet(address: str, request: Request):
     request_before = request_faucet_TTCache.get(request.client.host)
     if request_before:
-        return FaucetResponse(deployID='', message='Your request for testnet rev is too high. Try later.')
+        return FaucetResponse(deployID='',
+                              message='IP:{}, Your request for testnet rev to {} is too high. Try later. before deployId is {}'.format(
+                                  request.client.host, request_before[0], request_before[1]))
     else:
         try:
             with RClient(setting.TARGET_TESTNET_HOST, setting.TARGET_TESTNET_PORT) as client:
@@ -29,7 +31,7 @@ def faucet(address: str, request: Request):
                 private = PrivateKey.from_hex(setting.TESTNET_FAUCET_PRIVATE_KEY)
                 deployId = vault.transfer(private.get_public_key().get_rev_address(), address,
                                           setting.TESTNET_FAUCET_AMOUNT, private)
-                request_faucet_TTCache[request.client.host] = address
+                request_faucet_TTCache[request.client.host] = (address,  deployId)
                 return FaucetResponse(deployID=deployId,
                                       message="Transfer to your address is done. You will receive the rev in some time")
         except RClientException as e:
