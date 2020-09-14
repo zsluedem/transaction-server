@@ -1,7 +1,9 @@
-import cachetools
 import ipaddress
+
+import cachetools
 from fastapi import APIRouter
 from fastapi.requests import Request
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from rchain.client import RClient, RClientException
 from rchain.crypto import PrivateKey
@@ -18,8 +20,55 @@ class FaucetResponse(BaseModel):
     message: str
 
 
-@router.get('/testnet/faucet/{address}', response_model=FaucetResponse)
-def faucet(address: str, request: Request):
+class FaucetRequest(BaseModel):
+    address: str
+
+
+@router.get('/testnet/faucet/', response_class=HTMLResponse)
+def faucetPage():
+    return """
+<html>
+  <head>
+    <title>TestNet Faucet for RChain</title>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>TestNet Faucet for RChain</h1>
+      <label>Input your testnet rev address :</label><br />
+      <input v-model="address" /><br />
+      <button v-on:click="submitFaucet()" />Submit</button>
+      <h5>Result</h5>
+      <label>DeployId: {{deployID}}</label><br />
+      <label>Message: {{message}}</label><br />
+    </div>
+
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          address: "",
+          deployId: "",
+          message: ""
+        },
+        methods: {
+          async submitFaucet() {
+            const resp = await axios.post('/testnet/faucet', {"address": this.address})
+            this.deployID = resp.data.deployID
+            this.message = resp.data.message
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
+"""
+
+
+@router.post('/testnet/faucet/', response_model=FaucetResponse)
+def faucetPost(faucetRequest: FaucetRequest, request: Request):
+    address = faucetRequest.address
     ip = ipaddress.ip_address(request.client.host)
     if ip.is_private:
         host = request.headers.get('X-Real-IP')
@@ -31,17 +80,17 @@ def faucet(address: str, request: Request):
         addr = request.client.host
     request_before = request_faucet_TTCache.get(addr)
     if request_before:
-        return FaucetResponse(deployID='',
-                              message='IP:{}, Your request for testnet rev to {} is too high. Try later. before deployId is {}'.format(
-                                  addr, request_before[0], request_before[1]))
+        return FaucetResponse(deployID=request_before[1],
+                              message='IP:{}, Your request for testnet rev to {} is too high. Try later'.format(
+                                  addr, request_before[0]))
     else:
         try:
             with RClient(setting.TARGET_TESTNET_HOST, setting.TARGET_TESTNET_PORT) as client:
                 vault = VaultAPI(client)
                 private = PrivateKey.from_hex(setting.TESTNET_FAUCET_PRIVATE_KEY)
                 deployId = vault.transfer_ensure(private.get_public_key().get_rev_address(), address,
-                                          setting.TESTNET_FAUCET_AMOUNT, private)
-                request_faucet_TTCache[addr] = (address,  deployId, request.client.host)
+                                                 setting.TESTNET_FAUCET_AMOUNT, private)
+                request_faucet_TTCache[addr] = (address, deployId, request.client.host)
                 return FaucetResponse(deployID=deployId,
                                       message="Transfer to your address is done. You will receive the rev in some time")
         except RClientException as e:
