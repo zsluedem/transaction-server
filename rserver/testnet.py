@@ -3,7 +3,7 @@ import ipaddress
 import cachetools
 from fastapi import APIRouter
 from fastapi.requests import Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel
 from rchain.client import RClient, RClientException
 from rchain.crypto import PrivateKey
@@ -65,6 +65,10 @@ def faucetPage():
 </html>
 """
 
+# TODO remove it later
+@router.get('/testnet/faucet/{old}')
+def oldApi():
+    return RedirectResponse('/testnet/faucet')
 
 @router.post('/testnet/faucet/', response_model=FaucetResponse)
 def faucetPost(faucetRequest: FaucetRequest, request: Request):
