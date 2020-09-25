@@ -6,6 +6,8 @@ import asyncio
 import random
 from dataclasses import dataclass
 from typing import List, Dict
+import logging
+import traceback
 
 import aiohttp
 import cachetools
@@ -24,6 +26,8 @@ lock = asyncio.Lock()
 VALIDATOR_CACHE_KEY = 'v'
 NO_LATEST_BLOCK = -1
 
+
+logger = logging.getLogger(__name__)
 
 @dataclass()
 class LatestInfo():
@@ -67,6 +71,9 @@ async def get_latest_block(validator: ValidatorInfo):
         print("get latest block from {} failed with tiemout {} -> {}".format(validator.host,
                                                                              setting.VALIDATOR_REQUEST_TIMEOUT, e))
         return LatestInfo(block_number=NO_LATEST_BLOCK, sender='', validator=validator, timestamp=NO_LATEST_BLOCK)
+    except Exception as e:
+        logger.error("Uncaught Exception on getting latest block: \n" + traceback.print_exc())
+        raise e
 
 
 @router.get('/api/validators')
