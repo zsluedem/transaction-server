@@ -44,6 +44,7 @@ class LMDBWrapper:
 
 
 lmdb_env = lmdb.open(setting.DB_PATH, map_size=setting.MAX_MEM)
+lmdb_db = lmdb_env.open_db(b"transactions")
 
 
 def to_dict(deploy_transactions: List[DeployWithTransaction]):
@@ -101,14 +102,14 @@ async def transaction(blockHash: str):
         LockControll[blockHash] = lock
     block_hash_b: bytes = blockHash.encode('utf8')
     async with lock:
-        with lmdb_env.begin() as txn:
+        with lmdb_env.begin(db=lmdb_db) as txn:
             result = txn.get(block_hash_b)
         if result is None:
             logging.info("There no result in database for {}, fetch data from server".format(blockHash))
             result = await get_transactions(blockHash)
             logging.info("Done fetch {} result {} from server".format(blockHash, result[:20]))
-            with lmdb_env.begin(write=True) as w_txn:
-                w_txn.put(block_hash_b, result)
+            with lmdb_env.begin(write=True, db=lmdb_db) as w_txn:
+                w_txn.put(block_hash_b, result, db=lmdb_db)
             logging.info("put data {} into db".format(blockHash))
         else:
             logging.info("The data {} , {} is already in db".format(blockHash, result[:20]))
@@ -117,7 +118,7 @@ async def transaction(blockHash: str):
 @router.get('/api/transfer/{address}')
 async def transfer(address: str):
     result = []
-    with lmdb_env.begin() as txn:
+    with lmdb_env.begin(db=lmdb_db) as txn:
         cursor = txn.cursor()
         # block_transaction (hash, data)
         for block_transaction in iter(cursor):
