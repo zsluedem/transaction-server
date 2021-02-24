@@ -43,7 +43,7 @@ class LMDBWrapper:
             self._db = lmdb.open(path=self.path, map_size=self.map_size)
 
 
-lmdb_env = lmdb.open(setting.DB_PATH, map_size=setting.MAX_MEM)
+lmdb_env = lmdb.open(setting.DB_PATH, map_size=setting.MAX_MEM, max_dbs=10)
 lmdb_db = lmdb_env.open_db(b"transactions")
 
 
