@@ -8,18 +8,15 @@ from weakref import WeakValueDictionary
 from rchain.client import RClient
 from rchain.param import mainnet_param
 from .models import deployWithTransactionToTransactionInfo
-from .config import setting
+from .config import setting, database
 from fastapi import APIRouter
 from fastapi.responses import Response
-from .database.lmdb_storage import LMDB
 from .models import TransactionInfo
 
 LockControll = WeakValueDictionary()
 
 executor = ThreadPoolExecutor(setting.NUM_CORE)
 router = APIRouter()
-
-database = LMDB({"path": setting.DB_PATH, "mapSize": setting.MAX_MEM})
 
 def to_json_content(transactions: List[List[TransactionInfo]])-> str:
     jsonL = []

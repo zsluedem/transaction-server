@@ -8,8 +8,10 @@ VALIDATOR_REQUEST_TIMEOUT:
   2
 VALIDATORS_TTL:
   10
-DB_PATH:
-  /path/to/database
+DATABASE:
+  type: lmdb
+  path: /path/to/database
+  map_size: 500048576
 TARGET_RNODE_HOST:
   rnode.host
 TARGET_RNODE_PORT:
@@ -26,8 +28,6 @@ NUM_CORE:
   4
 LOG_PATH:
   /path/to/log.log
-MAX_MEM:
-  500048576
 CACHE_TTL:
   60
 TARGET_TESTNET_HOST:
