@@ -11,7 +11,7 @@ class LMDB(DataBaseInterface):
         super(LMDB, self).__init__(settings=settings)
         self.path = settings.get("path", "transaction")
         self.map_size = settings.get("mapSize", 500048576)
-        self._lmdb_env = lmdb.open(self.path, map_size=self.map_size)
+        self._lmdb_env = lmdb.open(self.path, map_size=self.map_size, max_dbs=10)
         self._db = self._lmdb_env.open_db(self.DATABASE)
 
 
