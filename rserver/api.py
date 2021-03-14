@@ -1,9 +1,6 @@
-from aiohttp import web
-from aiohttp.web import Request
 import aiohttp
 import json
 import logging
-from threading import RLock
 import cachetools
 from fastapi import APIRouter
 from fastapi.responses import Response
@@ -119,7 +116,6 @@ async def get_balance(address: str):
                         return -1
 
 
-circulation_lock = RLock()
 KEY_CIRCULATION = 'circulation'
 async def get_total_circulation():
     ret = circulation_TTCache.get(KEY_CIRCULATION)
