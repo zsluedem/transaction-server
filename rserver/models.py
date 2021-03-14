@@ -14,7 +14,7 @@ class DeployInfo(BaseModel):
     validAfterBlockNumber: int
     cost: int
     errored: bool
-    systemDeployError: int
+    systemDeployError: str
 
 class TransactionInfo(BaseModel):
     deploy: DeployInfo
