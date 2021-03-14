@@ -17,11 +17,12 @@ from pydantic import BaseModel
 
 from rserver.settings import ValidatorInfo
 from .config import setting
+from .utils import LazyAsyncLock
 
 router = APIRouter()
 
 validator_TTCache = cachetools.TTLCache(10e5, setting.VALIDATORS_TTL)
-lock = asyncio.Lock()
+lock = LazyAsyncLock()
 
 VALIDATOR_CACHE_KEY = 'v'
 NO_LATEST_BLOCK = -1
@@ -82,7 +83,7 @@ async def validator():
     if cache_data:
         resp: ValidatorsResponse = cache_data
     else:
-        async with lock:
+        async with lock.lock:
             cache_data = validator_TTCache.get(VALIDATOR_CACHE_KEY)
             if cache_data:
                 return cache_data
