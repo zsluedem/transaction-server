@@ -73,13 +73,9 @@ def oldApi():
 @router.post('/testnet/faucet/', response_model=FaucetResponse)
 def faucetPost(faucetRequest: FaucetRequest, request: Request):
     address = faucetRequest.address
-    ip = ipaddress.ip_address(request.client.host)
-    if ip.is_private:
-        host = request.headers.get('X-Real-IP')
-        if host:
-            addr = ipaddress.ip_address(host)
-        else:
-            addr = request.client.host
+    realIp = request.headers.get('X-Real-IP')
+    if realIp:
+        addr = ipaddress.ip_address(realIp)
     else:
         addr = request.client.host
     request_before = request_faucet_TTCache.get(addr)
