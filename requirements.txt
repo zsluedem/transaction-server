@@ -6,3 +6,4 @@ more_itertools
 cachetools
 aiohttp
 lmdb
+requests
