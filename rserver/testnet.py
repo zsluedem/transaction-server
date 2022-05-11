@@ -1,4 +1,5 @@
 import ipaddress
+import time
 
 import cachetools
 from fastapi import APIRouter
@@ -7,7 +8,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel
 from rchain.client import RClient, RClientException
 from rchain.crypto import PrivateKey
-from rchain.vault import VaultAPI
+from rchain.vault import VaultAPI, render_contract_template, TRANSFER_ENSURE_TO_RHO_TPL, TRANSFER_PHLO_LIMIT, \
+    TRANSFER_PHLO_PRICE
 
 from .config import setting
 
@@ -65,10 +67,12 @@ def faucetPage():
 </html>
 """
 
+
 # TODO remove it later
 @router.get('/testnet/faucet/{old}')
 def oldApi():
     return RedirectResponse('/testnet/faucet')
+
 
 @router.post('/testnet/faucet/', response_model=FaucetResponse)
 def faucetPost(faucetRequest: FaucetRequest, request: Request):
@@ -86,10 +90,17 @@ def faucetPost(faucetRequest: FaucetRequest, request: Request):
     else:
         try:
             with RClient(setting.TARGET_TESTNET_HOST, setting.TARGET_TESTNET_PORT) as client:
-                vault = VaultAPI(client)
                 private = PrivateKey.from_hex(setting.TESTNET_FAUCET_PRIVATE_KEY)
-                deployId = vault.transfer_ensure(private.get_public_key().get_rev_address(), address,
-                                                 setting.TESTNET_FAUCET_AMOUNT, private)
+                contract = render_contract_template(
+                    TRANSFER_ENSURE_TO_RHO_TPL, {
+                        'from': private.get_public_key().get_rev_address(),
+                        'to': address,
+                        'amount': str(setting.TESTNET_FAUCET_AMOUNT)
+                    }
+                )
+                timestamp_mill = int(time.time() * 1000)
+                deployId = client.deploy_with_vabn_filled(private, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT,
+                                                      timestamp_mill, setting.TESTNET_FAUCET_SHARDID)
                 request_faucet_TTCache[addr] = (address, deployId, request.client.host)
                 return FaucetResponse(deployID=deployId,
                                       message="Transfer to your address is done. You will receive the rev in some time")

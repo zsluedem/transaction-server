@@ -36,6 +36,7 @@ class Settings():
     TESTNET_FAUCET_TTL: int
     TESTNET_FAUCET_PRIVATE_KEY: str
     TESTNET_FAUCET_AMOUNT: int
+    TESTNET_FAUCET_SHARDID: str
 
     @classmethod
     def parse_from_yaml(cls, settings):
@@ -62,4 +63,5 @@ class Settings():
                    TARGET_TESTNET_PORT=settings['TARGET_TESTNET_PORT'],
                    TESTNET_FAUCET_TTL=settings['TESTNET_FAUCET_TTL'],
                    TESTNET_FAUCET_PRIVATE_KEY=settings['TESTNET_FAUCET_PRIVATE_KEY'],
-                   TESTNET_FAUCET_AMOUNT=settings['TESTNET_FAUCET_AMOUNT'])
+                   TESTNET_FAUCET_AMOUNT=settings['TESTNET_FAUCET_AMOUNT'],
+                   TESTNET_FAUCET_SHARDID=settings['TESTNET_FAUCET_SHARDID'])
