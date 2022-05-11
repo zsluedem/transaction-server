@@ -1,5 +1,5 @@
 pyrchain==0.3.13a0
-PyYAML==5.3.1
+PyYAML==5.4
 fastapi
 uvicorn
 more_itertools
