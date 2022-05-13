@@ -16,27 +16,12 @@ class ValidatorInfo():
 
 @dataclass()
 class Settings():
-    TARGET_RNODE_HOST: str
-    TARGET_RNODE_PORT: int
-    TARGET_RNODE_HTTP_PORT: int
-    USE_HTTPS: bool
     HOST: str
     PORT: int
-    NUM_CORE: int
-    DATABASE: Dict
-    LOG_PATH: str
-    CACHE_TTL: int
     VALIDATORS_TTL: int
     validator_list: Optional[List[ValidatorInfo]]
     original_setting_dict: Dict
     VALIDATOR_REQUEST_TIMEOUT: int
-
-    TARGET_TESTNET_HOST: str
-    TARGET_TESTNET_PORT: str
-    TESTNET_FAUCET_TTL: int
-    TESTNET_FAUCET_PRIVATE_KEY: str
-    TESTNET_FAUCET_AMOUNT: int
-    TESTNET_FAUCET_SHARDID: str
 
     @classmethod
     def parse_from_yaml(cls, settings):
@@ -46,22 +31,9 @@ class Settings():
                               isHTTPS=v['isHTTPS']) for v in settings['VALIDATOR_LIST']]
         else:
             validator_list = None
-        return cls(DATABASE=settings['DATABASE'],
-                   TARGET_RNODE_HOST=settings['TARGET_RNODE_HOST'],
-                   TARGET_RNODE_PORT=settings['TARGET_RNODE_PORT'],
-                   TARGET_RNODE_HTTP_PORT=settings['TARGET_RNODE_HTTP_PORT'],
-                   USE_HTTPS=settings['USE_HTTPS'],
+        return cls(
                    HOST=settings['HOST'],
                    PORT=settings['PORT'],
-                   NUM_CORE=settings['NUM_CORE'],
-                   LOG_PATH=settings['LOG_PATH'],
-                   CACHE_TTL=settings['CACHE_TTL'],
                    validator_list=validator_list, original_setting_dict=settings,
                    VALIDATOR_REQUEST_TIMEOUT=settings['VALIDATOR_REQUEST_TIMEOUT'],
-                   VALIDATORS_TTL=settings['VALIDATORS_TTL'],
-                   TARGET_TESTNET_HOST=settings['TARGET_TESTNET_HOST'],
-                   TARGET_TESTNET_PORT=settings['TARGET_TESTNET_PORT'],
-                   TESTNET_FAUCET_TTL=settings['TESTNET_FAUCET_TTL'],
-                   TESTNET_FAUCET_PRIVATE_KEY=settings['TESTNET_FAUCET_PRIVATE_KEY'],
-                   TESTNET_FAUCET_AMOUNT=settings['TESTNET_FAUCET_AMOUNT'],
-                   TESTNET_FAUCET_SHARDID=settings['TESTNET_FAUCET_SHARDID'])
+                   VALIDATORS_TTL=settings['VALIDATORS_TTL'])
